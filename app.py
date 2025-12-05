@@ -3,10 +3,6 @@ import numpy as np
 import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 st.set_page_config(
     page_title="Projeto Tanque Ótimo",
     layout="wide",
@@ -22,10 +18,6 @@ def local_css(file_name):
 
 local_css("assets/style.css")
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 st.markdown("""
 <h1 class='main-header'>
     <i class="bi bi-buildings-fill icon-blue"></i> Otimização de Tanque Industrial
@@ -35,20 +27,12 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 st.sidebar.markdown("""
 <div class="sidebar-header">
     <i class='bi bi-sliders icon-blue'></i> &nbsp; Parâmetros de Projeto
 </div>
 """, unsafe_allow_html=True)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 st.sidebar.markdown("**Forma do Recipiente:**")
 geometry_type = st.sidebar.selectbox(
     "Selecione o formato:",
@@ -56,10 +40,6 @@ geometry_type = st.sidebar.selectbox(
     label_visibility="collapsed"
 )
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 num_sides = 0
 if geometry_type == "Prisma Regular (Polígono)":
     num_sides = st.sidebar.slider("Número de Lados da Base (n)", min_value=3, max_value=12, value=4, help="3=Triângulo, 4=Quadrado/Retângulo, 6=Hexágono...")
@@ -74,10 +54,6 @@ cost_side = st.sidebar.number_input("Custo Lateral (R$/m²)", min_value=1.0, val
 st.sidebar.markdown("---")
 st.sidebar.caption("v2.2 - Multi-Geometry Update")
 
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
 selected = option_menu(
     menu_title=None,
     options=["Otimização", "Massa & Volume", "Simulação Térmica"],
@@ -94,10 +70,6 @@ selected = option_menu(
 )
 
 
-<<<<<<< HEAD
-# MÓDULO 1: OTIMIZAÇÃO
-=======
->>>>>>> develop
 if selected == "Otimização":
     st.markdown("<h3 class='sub-header'><i class='bi bi-rulers icon-blue'></i> Geometria de Custo Mínimo</h3>", unsafe_allow_html=True)
     
@@ -109,18 +81,11 @@ if selected == "Otimização":
     if geometry_type == "Cilindro (Padrão)":
         dim_name = "Raio (r)"
         st.markdown(r"Aplicação de **Lagrange** para **Cilindro**. Minimizando custo sujeito a Volume $V = \pi r^2 h$.")
-<<<<<<< HEAD
-        
-        opt_dimension = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
-        opt_height = target_volume / (np.pi * opt_dimension**2)
-        
-=======
 
         opt_dimension = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
         opt_height = target_volume / (np.pi * opt_dimension**2)
         
 
->>>>>>> develop
         area_base = np.pi * opt_dimension**2
         area_side = 2 * np.pi * opt_dimension * opt_height
         min_cost = (2 * area_base * cost_base) + (area_side * cost_side)
@@ -215,15 +180,6 @@ if selected == "Otimização":
             st.latex(r"Area_{base} = \frac{n L^2}{4 \tan(\pi/n)}")
             st.latex(r"C(L) = 2 A_{base} C_{base} + \frac{n V C_{lat}}{Area_{base}}")
 
-<<<<<<< HEAD
-
-# MÓDULO 2: MASSA
-if selected == "Massa & Volume":
-    st.markdown("<h3 class='sub-header'><i class='bi bi-hdd-stack icon-blue'></i> Propriedades Físicas</h3>", unsafe_allow_html=True)
-    st.warning("Módulo em desenvolvimento...")
-    st.markdown("Cálculo de integrais ajustado para a geometria selecionada.")
-
-=======
 
 if selected == "Massa & Volume":
     st.markdown("<h3 class='sub-header'><i class='bi bi-hdd-stack icon-blue'></i> Propriedades Físicas e Massa</h3>", unsafe_allow_html=True)
@@ -321,7 +277,6 @@ massa = area * (termo1 - termo2)
         st.code(code_snippet, language="python")
         st.success("Nota: Em projetos complexos, usaríamos `scipy.integrate.quad` para resolver numericamente, mas como a função densidade é linear, a solução exata é mais rápida.")
 
->>>>>>> develop
 
 # MÓDULO 3: TÉRMICA
 if selected == "Simulação Térmica":
