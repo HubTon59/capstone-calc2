@@ -1,6 +1,5 @@
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
 
-/* --- 1. Tipografia Global --- */
 .main-header {
     font-family: "Source Sans Pro", sans-serif;
     font-weight: 700;
@@ -18,7 +17,6 @@
     padding-bottom: 0.5rem;
 }
 
-/* --- 2. Ícones --- */
 .icon-blue {
     color: #0d6efd;
     margin-right: 8px;
@@ -32,7 +30,6 @@
     vertical-align: middle;
 }
 
-/* --- 3. Cards de Métricas (Design System) --- */
 div[data-testid="stMetric"] {
     background-color: var(--secondary-background-color);
     color: var(--text-color);
@@ -48,8 +45,6 @@ div[data-testid="stMetric"]:hover {
     border-color: #0d6efd;
 }
 
-/* --- 4. Ajustes Finos da Sidebar --- */
-/* Estiliza o título "Parâmetros" para parecer nativo mas com nossa fonte */
 .sidebar-header {
     font-size: 1.2rem;
     font-weight: 600;
@@ -59,12 +54,10 @@ div[data-testid="stMetric"]:hover {
     align-items: center;
 }
 
-/* Remove espaço extra no topo da página */
 .block-container {
     padding-top: 2rem;
 }
 
-/* Força os inputs numéricos a terem a borda azul quando focados (Reforço) */
 input:focus {
     border-color: #0d6efd !important;
     box-shadow: 0 0 0 1px #0d6efd !important;
