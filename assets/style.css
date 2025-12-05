@@ -1,0 +1,71 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
+
+/* --- 1. Tipografia Global --- */
+.main-header {
+    font-family: "Source Sans Pro", sans-serif;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.sub-header {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--secondary-background-color);
+    padding-bottom: 0.5rem;
+}
+
+/* --- 2. Ícones --- */
+.icon-blue {
+    color: #0d6efd;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-gray {
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* --- 3. Cards de Métricas (Design System) --- */
+div[data-testid="stMetric"] {
+    background-color: var(--secondary-background-color);
+    color: var(--text-color);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+div[data-testid="stMetric"]:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-color: #0d6efd;
+}
+
+/* --- 4. Ajustes Finos da Sidebar --- */
+/* Estiliza o título "Parâmetros" para parecer nativo mas com nossa fonte */
+.sidebar-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* Remove espaço extra no topo da página */
+.block-container {
+    padding-top: 2rem;
+}
+
+/* Força os inputs numéricos a terem a borda azul quando focados (Reforço) */
+input:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 1px #0d6efd !important;
+}
