@@ -1,0 +1,22 @@
+# Ignorar ambiente virtual (O MAIS IMPORTANTE)
+.venv/
+venv/
+env/
+/bin
+/lib
+/include
+pyvenv.cfg
+
+# Ignorar cache do Python (arquivos compilados)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar arquivos de sistema e IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Ignorar segredos do Streamlit (se formos usar senhas no futuro)
+.streamlit/secrets.toml
