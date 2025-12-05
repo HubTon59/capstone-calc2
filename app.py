@@ -278,7 +278,81 @@ massa = area * (termo1 - termo2)
         st.success("Nota: Em projetos complexos, usaríamos `scipy.integrate.quad` para resolver numericamente, mas como a função densidade é linear, a solução exata é mais rápida.")
 
 
-# MÓDULO 3: TÉRMICA
 if selected == "Simulação Térmica":
-    st.markdown("<h3 class='sub-header'><i class='bi bi-thermometer-high icon-blue'></i> Termodinâmica</h3>", unsafe_allow_html=True)
-    st.warning("Módulo em desenvolvimento...")
+    st.markdown("<h3 class='sub-header'><i class='bi bi-thermometer-high icon-blue'></i> Termodinâmica e EDO</h3>", unsafe_allow_html=True)
+    
+    st.markdown("Análise de segurança baseada na **Lei de Resfriamento de Newton**. Prevê quanto tempo o produto leva para atingir temperaturas críticas em caso de falha na refrigeração.")
+
+    col_param1, col_param2, col_param3 = st.columns(3)
+    
+    with col_param1:
+        t_amb = st.number_input("Temp. Ambiente (°C)", value=35.0, step=1.0, help="Temperatura externa (dia quente)")
+        t_critical = st.number_input("Temp. Crítica (°C)", value=25.0, step=1.0, help="Limite de segurança do produto")
+    
+    with col_param2:
+        t_initial = st.number_input("Temp. Inicial Produto (°C)", value=5.0, step=1.0, help="Temperatura ao sair da refrigeração")
+        time_span = st.slider("Tempo de Simulação (horas)", 1, 48, 24)
+
+    with col_param3:
+        k_const = st.number_input("Condutividade Térmica (k)", value=0.15, step=0.01, format="%.2f", help="Quanto maior, mais rápido troca calor")
+        st.caption("k depende do isolamento do tanque (espessura da parede calculada na aba anterior).")
+
+    st.markdown("---")
+
+    t_values = np.linspace(0, time_span, 100)
+    
+    temp_values = t_amb + (t_initial - t_amb) * np.exp(-k_const * t_values)
+
+    risk_indices = np.where(temp_values >= t_critical)[0]
+    time_to_fail = None
+    
+    if len(risk_indices) > 0:
+        time_to_fail = t_values[risk_indices[0]]
+
+    col_graph, col_educ = st.columns([2, 1])
+
+    with col_graph:
+        st.markdown("#### <i class='bi bi-graph-up-arrow icon-gray'></i> Curva de Aquecimento", unsafe_allow_html=True)
+        
+        fig_temp = go.Figure()
+        
+        fig_temp.add_trace(go.Scatter(x=t_values, y=temp_values, mode='lines', name='Temperatura Produto', line=dict(color='#0d6efd', width=3)))
+        
+        fig_temp.add_trace(go.Scatter(x=[0, time_span], y=[t_critical, t_critical], mode='lines', name='Limite Crítico', line=dict(color='red', dash='dash')))
+        
+        fig_temp.update_layout(
+            xaxis_title="Tempo (horas)",
+            yaxis_title="Temperatura (°C)",
+            height=350,
+            margin=dict(l=0, r=0, t=10, b=0),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            hovermode="x unified",
+            legend=dict(orientation="h", y=1.1)
+        )
+        st.plotly_chart(fig_temp, use_container_width=True)
+
+        if time_to_fail is not None:
+            st.error(f"🚨 **PERIGO:** A temperatura crítica será atingida em **{time_to_fail:.1f} horas**.")
+        else:
+            st.success("✅ **SEGURO:** A temperatura não atinge o nível crítico dentro do tempo simulado.")
+
+    with col_educ:
+        st.markdown("#### <i class='bi bi-code-slash icon-gray'></i> Math vs Code", unsafe_allow_html=True)
+        
+        st.markdown("**1. Modelo (EDO)**")
+        st.write("A variação da temperatura é proporcional à diferença entre o corpo e o ambiente.")
+        st.latex(r"\frac{dT}{dt} = -k(T - T_{amb})")
+        
+        st.markdown("**2. Solução Analítica**")
+        st.write("Integrando a equação, obtemos a função exponencial usada no Python:")
+        st.latex(r"T(t) = T_{amb} + (T_0 - T_{amb})e^{-kt}")
+
+        st.markdown("**3. Código Python**")
+        code_snippet = f"""
+# Vetorização (NumPy)
+t = np.linspace(0, {time_span}, 100)
+
+# Fórmula Exata
+T = {t_amb} + ({t_initial} - {t_amb}) * np.exp(-{k_const} * t)
+"""
+        st.code(code_snippet, language="python")
