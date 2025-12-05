@@ -1,15 +1,7 @@
 [theme]
-# A cor primária define a cor dos sliders, botões e o contorno de foco nos inputs
 primaryColor = "#0d6efd"
 
-# Cor de fundo e texto (Deixamos automático para respeitar o Modo Escuro/Claro)
-# backgroundColor = "#ffffff"
-# secondaryBackgroundColor = "#f0f2f6"
-# textColor = "#262730"
-
-# Fonte padrão (Sans serif é mais moderno e técnico)
 font = "sans serif"
 
 [server]
-# Desabilita a barra de ferramentas de desenvolvimento no topo (opcional, deixa mais limpo)
 headless = true
