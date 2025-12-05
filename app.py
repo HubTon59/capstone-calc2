@@ -3,7 +3,10 @@ import numpy as np
 import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 st.set_page_config(
     page_title="Projeto Tanque Ótimo",
     layout="wide",
@@ -19,7 +22,10 @@ def local_css(file_name):
 
 local_css("assets/style.css")
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 st.markdown("""
 <h1 class='main-header'>
     <i class="bi bi-buildings-fill icon-blue"></i> Otimização de Tanque Industrial
@@ -29,14 +35,20 @@ st.markdown("""
 </p>
 """, unsafe_allow_html=True)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 st.sidebar.markdown("""
 <div class="sidebar-header">
     <i class='bi bi-sliders icon-blue'></i> &nbsp; Parâmetros de Projeto
 </div>
 """, unsafe_allow_html=True)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 st.sidebar.markdown("**Forma do Recipiente:**")
 geometry_type = st.sidebar.selectbox(
     "Selecione o formato:",
@@ -44,7 +56,10 @@ geometry_type = st.sidebar.selectbox(
     label_visibility="collapsed"
 )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 num_sides = 0
 if geometry_type == "Prisma Regular (Polígono)":
     num_sides = st.sidebar.slider("Número de Lados da Base (n)", min_value=3, max_value=12, value=4, help="3=Triângulo, 4=Quadrado/Retângulo, 6=Hexágono...")
@@ -59,7 +74,10 @@ cost_side = st.sidebar.number_input("Custo Lateral (R$/m²)", min_value=1.0, val
 st.sidebar.markdown("---")
 st.sidebar.caption("v2.2 - Multi-Geometry Update")
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
 selected = option_menu(
     menu_title=None,
     options=["Otimização", "Massa & Volume", "Simulação Térmica"],
@@ -76,7 +94,10 @@ selected = option_menu(
 )
 
 
+<<<<<<< HEAD
 # MÓDULO 1: OTIMIZAÇÃO
+=======
+>>>>>>> develop
 if selected == "Otimização":
     st.markdown("<h3 class='sub-header'><i class='bi bi-rulers icon-blue'></i> Geometria de Custo Mínimo</h3>", unsafe_allow_html=True)
     
@@ -88,10 +109,18 @@ if selected == "Otimização":
     if geometry_type == "Cilindro (Padrão)":
         dim_name = "Raio (r)"
         st.markdown(r"Aplicação de **Lagrange** para **Cilindro**. Minimizando custo sujeito a Volume $V = \pi r^2 h$.")
+<<<<<<< HEAD
         
         opt_dimension = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
         opt_height = target_volume / (np.pi * opt_dimension**2)
         
+=======
+
+        opt_dimension = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
+        opt_height = target_volume / (np.pi * opt_dimension**2)
+        
+
+>>>>>>> develop
         area_base = np.pi * opt_dimension**2
         area_side = 2 * np.pi * opt_dimension * opt_height
         min_cost = (2 * area_base * cost_base) + (area_side * cost_side)
@@ -186,6 +215,7 @@ if selected == "Otimização":
             st.latex(r"Area_{base} = \frac{n L^2}{4 \tan(\pi/n)}")
             st.latex(r"C(L) = 2 A_{base} C_{base} + \frac{n V C_{lat}}{Area_{base}}")
 
+<<<<<<< HEAD
 
 # MÓDULO 2: MASSA
 if selected == "Massa & Volume":
@@ -193,6 +223,105 @@ if selected == "Massa & Volume":
     st.warning("Módulo em desenvolvimento...")
     st.markdown("Cálculo de integrais ajustado para a geometria selecionada.")
 
+=======
+
+if selected == "Massa & Volume":
+    st.markdown("<h3 class='sub-header'><i class='bi bi-hdd-stack icon-blue'></i> Propriedades Físicas e Massa</h3>", unsafe_allow_html=True)
+
+    opt_dim = 0
+    opt_h = 0
+    k_area = 0
+    
+    if geometry_type.startswith("Cil"):
+        opt_dim = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
+        opt_h = target_volume / (np.pi * opt_dim**2)
+        k_area = np.pi
+        geo_name = "Cilindro"
+    else:
+        n = num_sides
+        k_area = n / (4 * np.tan(np.pi / n))
+        num = n * target_volume * cost_side
+        den = 4 * (k_area**2) * cost_base
+        opt_dim = (num / den)**(1/3)
+        opt_h = target_volume / (k_area * opt_dim**2)
+        geo_name = f"Prisma ({n} lados)"
+
+    area_base = k_area * opt_dim**2
+
+    st.markdown(f"**Configuração do Material ({geo_name}):**")
+    st.info(f"Dimensões Otimizadas importadas: Base (r/L) = {opt_dim:.2f}m | Altura = {opt_h:.2f}m | Área Base = {area_base:.2f}m²")
+
+    col_mat1, col_mat2 = st.columns(2)
+    with col_mat1:
+        rho_base = st.number_input("Densidade na Base (kg/m³)", value=8000.0, step=100.0, help="Ex: Aço reforçado na base")
+    with col_mat2:
+        rho_top = st.number_input("Densidade no Topo (kg/m³)", value=7500.0, step=100.0, help="Ex: Aço mais leve no topo")
+
+    if rho_top > rho_base:
+        st.error("A densidade no topo geralmente é menor ou igual à da base.")
+
+    density_gradient_B = (rho_base - rho_top) / opt_h
+
+    st.markdown("---")
+
+    col_result, col_code = st.columns([1, 1])
+
+    with col_result:
+        st.markdown("#### <i class='bi bi-calculator'></i> Resultados", unsafe_allow_html=True)
+        
+        total_mass = area_base * (rho_base * opt_h - (density_gradient_B * opt_h**2) / 2)
+
+        moment_xy = area_base * ((rho_base * opt_h**2)/2 - (density_gradient_B * opt_h**3)/3)
+        z_cm = moment_xy / total_mass
+
+        st.metric("Massa Total Estimada", f"{total_mass:,.2f} kg")
+        st.metric("Centro de Massa (Altura Z)", f"{z_cm:.2f} m")
+        st.caption(f"O centro de massa está a {(z_cm/opt_h)*100:.1f}% da altura total.")
+
+        z_vals = np.linspace(0, opt_h, 100)
+        rho_vals = rho_base - density_gradient_B * z_vals
+        
+        fig_rho = go.Figure()
+        fig_rho.add_trace(go.Scatter(x=rho_vals, y=z_vals, mode='lines', fill='tozeroy', name='Densidade'))
+        fig_rho.update_layout(
+            title="Perfil de Densidade (Parede do Tanque)",
+            xaxis_title="Densidade (kg/m³)",
+            yaxis_title="Altura Z (m)",
+            height=300,
+            margin=dict(l=0, r=0, t=30, b=0),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)'
+        )
+        st.plotly_chart(fig_rho, use_container_width=True)
+
+    with col_code:
+        st.markdown("#### <i class='bi bi-code-slash'></i> Conexão Cálculo-Código", unsafe_allow_html=True)
+        
+        st.markdown("**1. O Problema Matemático**")
+        st.write("A massa não é constante. Usamos uma integral definida para somar as 'fatias' infinitesimais de massa ao longo da altura $z$.")
+        st.latex(r"M = \int_{0}^{H} Area_{base} \cdot \rho(z) \, dz")
+        st.latex(r"\text{Onde } \rho(z) = \rho_{base} - \frac{\Delta \rho}{H} \cdot z")
+
+        st.markdown("**2. A Implementação em Python**")
+        st.write("O código abaixo resolve a integral definida analiticamente:")
+        code_snippet = f'''
+# Parâmetros
+area = {area_base:.2f}
+h = {opt_h:.2f}
+rho_b = {rho_base}
+B = {density_gradient_B:.4f}
+
+# Resolução da Integral Definida
+# Int(A - Bz) dz  =>  Az - (Bz^2)/2
+termo1 = rho_b * h
+termo2 = (B * h**2) / 2
+
+massa = area * (termo1 - termo2)
+# Resultado: {total_mass:.2f} kg
+'''
+        st.code(code_snippet, language="python")
+        st.success("Nota: Em projetos complexos, usaríamos `scipy.integrate.quad` para resolver numericamente, mas como a função densidade é linear, a solução exata é mais rápida.")
+
+>>>>>>> develop
 
 # MÓDULO 3: TÉRMICA
 if selected == "Simulação Térmica":
