@@ -342,27 +342,84 @@ if selected == "Simulação Térmica":
     risk_indices = np.where(temp_values >= t_critical)[0]
     time_to_fail = t_values[risk_indices[0]] if len(risk_indices) > 0 else None
 
-    col_graph, col_educ = st.columns([2, 1])
+    # --- VISUALIZAÇÃO DOS DADOS ---
+    st.markdown("---")
+    
+    # Layout: Gráfico à esquerda, Alertas e Métricas à direita
+    col_viz, col_alert = st.columns([2, 1])
 
-    with col_graph:
+    with col_viz:
         st.markdown("#### <i class='bi bi-graph-up-arrow icon-gray'></i> Curva de Aquecimento", unsafe_allow_html=True)
+        
         fig_temp = go.Figure()
-        fig_temp.add_trace(go.Scatter(x=t_values, y=temp_values, mode='lines', name='Temperatura', line=dict(color='#0d6efd', width=3)))
-        fig_temp.add_trace(go.Scatter(x=[0, time_span], y=[t_critical, t_critical], mode='lines', name='Crítico', line=dict(color='red', dash='dash')))
-        fig_temp.update_layout(xaxis_title="Tempo (h)", yaxis_title="Temp (°C)", height=350, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', hovermode="x unified", legend=dict(orientation="h", y=1.1))
+        # Linha da Temperatura
+        fig_temp.add_trace(go.Scatter(x=t_values, y=temp_values, mode='lines', name='Temperatura', line=dict(color='#fd7e14', width=3))) # Laranja Térmico
+        # Linha Crítica
+        fig_temp.add_trace(go.Scatter(x=[0, time_span], y=[t_critical, t_critical], mode='lines', name='Limite Crítico', line=dict(color='red', dash='dash')))
+        
+        fig_temp.update_layout(
+            xaxis_title="Tempo Decorrido (horas)",
+            yaxis_title="Temperatura (°C)",
+            height=350,
+            margin=dict(t=10, b=0, l=0, r=0),
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(0,0,0,0)',
+            hovermode="x unified",
+            legend=dict(orientation="h", y=1.1)
+        )
         st.plotly_chart(fig_temp, use_container_width=True)
-        
-        if time_to_fail:
-            st.error(f"🚨 **PERIGO:** Limite atingido em **{time_to_fail:.1f} horas**.")
-        else:
-            st.success("✅ **SEGURO:** Temperatura estável no período.")
 
-    with col_educ:
-        st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Equações Diferenciais (EDO)", unsafe_allow_html=True)
-        st.write("""
-        A Lei de Newton afirma que a **velocidade** de mudança da temperatura ($dT/dt$) é proporcional à diferença entre a temperatura atual e a ambiente.
-        """)
-        st.latex(r"\frac{dT}{dt} \propto (T - T_{amb})")
+    with col_alert:
+        st.markdown("#### <i class='bi bi-shield-check icon-gray'></i> Status de Segurança", unsafe_allow_html=True)
         
-        st.markdown("**Interpretação:**")
-        st.write("Quando o produto está muito frio e o dia quente, a diferença é grande, então ele esquenta rápido (inclinação alta no início do gráfico). Conforme ele esquenta, a troca de calor diminui.")
+        if time_to_fail is not None:
+            st.error(f"🚨 **CRÍTICO**")
+            st.metric("Tempo até Falha", f"{time_to_fail:.1f} horas", delta="- Risco Iminente", delta_color="inverse")
+            st.caption(f"O produto atingirá {t_critical}°C antes do fim da simulação.")
+        else:
+            st.success(f"✅ **SEGURO**")
+            st.metric("Margem de Segurança", "Estável", delta="OK")
+            st.caption(f"A temperatura permanece abaixo de {t_critical}°C por todo o período.")
+
+        # Exibir a equação usada com os valores atuais
+        st.markdown("---")
+        st.caption("Parâmetros do Modelo:")
+        st.code(f"k = {k_const} (Isolamento)\nT_amb = {t_amb}°C\nT_inicial = {t_initial}°C", language="text")
+
+    # --- ÁREA EDUCACIONAL (LADO A LADO) ---
+    st.markdown("---")
+    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Da Teoria à Prática", unsafe_allow_html=True)
+    
+    col_math, col_code = st.columns([1, 1])
+    
+    with col_math:
+        st.markdown("**1. A Modelagem (Equações Diferenciais)**")
+        st.write("""
+        A Lei de Resfriamento de Newton diz que a **velocidade** com que a temperatura muda é proporcional à diferença entre o corpo e o ambiente.
+        """)
+        
+        st.latex(r"\frac{dT}{dt} = -k \cdot (T(t) - T_{amb})")
+        
+        st.write("Esta é uma **EDO de 1ª ordem separável**. Integrando ambos os lados em relação ao tempo, chegamos à solução analítica (função exponencial):")
+        
+        st.latex(r"T(t) = T_{amb} + (T_{inicial} - T_{amb}) \cdot e^{-k \cdot t}")
+        st.caption("O termo $e^{-kt}$ faz a diferença de temperatura decair suavemente até zero.")
+
+    with col_code:
+        st.markdown("**2. O Algoritmo (Python)**")
+        st.write("Em vez de simular passo a passo (loop), usamos a **solução analítica vetorizada** do NumPy, que calcula todos os pontos de tempo de uma vez.")
+        
+        code_snippet = f"""
+# Parâmetros Físicos
+k = {k_const}
+t_amb = {t_amb}
+delta_T = {t_initial} - {t_amb}
+
+# Vetor de Tempo (0 a {time_span}h)
+t = np.linspace(0, {time_span}, 100)
+
+# Aplicação da Solução da EDO
+# np.exp() calcula e^(-kt) para cada instante
+temp_final = t_amb + delta_T * np.exp(-k * t)
+"""
+        st.code(code_snippet, language="python")
