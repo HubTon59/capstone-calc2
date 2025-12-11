@@ -36,7 +36,7 @@ cost_base = st.sidebar.number_input("Custo Base (R$/m²)", min_value=1.0, value=
 cost_side = st.sidebar.number_input("Custo Lateral (R$/m²)", min_value=1.0, value=10.0)
 
 st.sidebar.markdown("---")
-st.sidebar.caption("v5.0 - Modular MVC Architecture")
+st.sidebar.caption("Projeto - Grupo só por DX")
 
 # 4. Navegação
 selected = option_menu(
