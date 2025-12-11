@@ -1,42 +1,22 @@
 import streamlit as st
-import numpy as np
-import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
 
+# Importando nossos novos módulos
+from src.utils import ui_helper
+from src.views import optimization_view, physics_view, thermal_view
+
+# 1. Configuração Global
 st.set_page_config(
     page_title="Projeto Tanque Ótimo",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-def local_css(file_name):
-    try:
-        with open(file_name) as f:
-            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-    except FileNotFoundError:
-        pass
+# 2. Carregar Recursos
+ui_helper.load_css("assets/style.css")
+ui_helper.render_header()
 
-local_css("assets/style.css")
-
-st.markdown("""
-<h1 class='main-header'>
-    <i class="bi bi-buildings-fill icon-blue"></i> Otimização de Tanque Industrial
-</h1>
-<p style='font-size: 1.1rem; opacity: 0.8;'>
-    <b>Cálculo 2 Aplicado à Engenharia</b> — Modelagem matemática para maximização de eficiência e análise de fenômenos físicos.
-</p>
-""", unsafe_allow_html=True)
-
-with st.expander("📘 Entenda o Problema de Engenharia (O Dilema Custo vs. Geometria)", expanded=False):
-    st.markdown("""
-    **O Desafio:** Projetar um reservatório que armazene um volume fixo $V$, mas que custe o mínimo possível.
-    
-    **A Tensão:** * Se fizermos o tanque muito **largo e baixo** (parece uma piscina), gastamos muito material na base e tampa (que são caros por serem reforçados).
-    * Se fizermos o tanque muito **alto e fino** (parece um tubo), gastamos muito material na parede lateral.
-    
-    **A Solução via Cálculo:** Existe um "ponto ideal" entre esses dois extremos. Usamos **Derivadas Parciais** e **Multiplicadores de Lagrange** para encontrar exatamente onde a taxa de variação do custo se anula em relação à geometria.
-    """)
-
+# 3. Sidebar (Inputs Globais)
 st.sidebar.markdown("""
 <div class="sidebar-header">
     <i class='bi bi-sliders icon-blue'></i> &nbsp; Parâmetros de Projeto
@@ -44,70 +24,40 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("**Forma do Recipiente:**")
-geometry_type = st.sidebar.selectbox(
-    "Selecione o formato:",
-    ["Cilindro (Padrão)", "Prisma Regular (Polígono)"],
-    label_visibility="collapsed"
-)
+geometry_type = st.sidebar.selectbox("Selecione:", ["Cilindro (Padrão)", "Prisma Regular (Polígono)"], label_visibility="collapsed")
 
 num_sides = 0
 if geometry_type == "Prisma Regular (Polígono)":
-    num_sides = st.sidebar.slider("Número de Lados da Base (n)", min_value=3, max_value=12, value=4, help="3=Triângulo, 4=Quadrado/Retângulo, 6=Hexágono...")
+    num_sides = st.sidebar.slider("Lados (n)", 3, 12, 4)
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Restrições e Custos:**")
-
-target_volume = st.sidebar.number_input("Volume Alvo (m³)", min_value=10.0, value=1000.0, step=10.0)
-cost_base = st.sidebar.number_input("Custo Base/Tampa (R$/m²)", min_value=1.0, value=20.0, step=1.0, help="Geralmente mais caro devido à fundação/reforço.")
-cost_side = st.sidebar.number_input("Custo Lateral (R$/m²)", min_value=1.0, value=10.0, step=1.0)
+target_volume = st.sidebar.number_input("Volume Alvo (m³)", min_value=10.0, value=1000.0)
+cost_base = st.sidebar.number_input("Custo Base (R$/m²)", min_value=1.0, value=20.0)
+cost_side = st.sidebar.number_input("Custo Lateral (R$/m²)", min_value=1.0, value=10.0)
 
 st.sidebar.markdown("---")
-st.sidebar.caption("v4.0 - Master Edition")
+st.sidebar.caption("v5.0 - Modular MVC Architecture")
 
+# 4. Navegação
 selected = option_menu(
     menu_title=None,
     options=["Otimização", "Massa & Volume", "Simulação Térmica"],
     icons=["calculator", "box-seam", "thermometer-sun"], 
-    menu_icon="cast",
-    default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"padding": "0!important", "background-color": "transparent"},
-        "icon": {"color": "orange", "font-size": "18px"}, 
-        "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "var(--secondary-background-color)"},
+        "container": {"background-color": "transparent"},
         "nav-link-selected": {"background-color": "#0d6efd"},
     }
 )
 
+# 5. Roteamento (Controller Principal)
 if selected == "Otimização":
-    st.markdown("<h3 class='sub-header'><i class='bi bi-rulers icon-blue'></i> Geometria de Custo Mínimo</h3>", unsafe_allow_html=True)
-    
-    opt_dimension = 0 
-    opt_height = 0
-    min_cost = 0
-    dim_name = "" 
-    k_area = 0
+    optimization_view.render(geometry_type, num_sides, target_volume, cost_base, cost_side)
 
-    if geometry_type == "Cilindro (Padrão)":
-        dim_name = "Raio (r)"
-        k_area = np.pi
-        opt_dimension = ((target_volume * cost_side) / (2 * np.pi * cost_base))**(1/3)
-        opt_height = target_volume / (np.pi * opt_dimension**2)
-        area_base = np.pi * opt_dimension**2
-        area_side = 2 * np.pi * opt_dimension * opt_height
-        min_cost = (2 * area_base * cost_base) + (area_side * cost_side)
-    else:
-        dim_name = "Lado da Base (L)"
-        n = num_sides
-        k_area = n / (4 * np.tan(np.pi / n))
-        numerator = n * target_volume * cost_side
-        denominator = 4 * (k_area**2) * cost_base
-        opt_dimension = (numerator / denominator)**(1/3)
-        opt_height = target_volume / (k_area * opt_dimension**2)
-        area_base = k_area * opt_dimension**2
-        area_side = (n * opt_dimension) * opt_height
-        min_cost = (2 * area_base * cost_base) + (area_side * cost_side)
+elif selected == "Massa & Volume":
+    physics_view.render(geometry_type, num_sides, target_volume, cost_base, cost_side)
 
+<<<<<<< HEAD
     c1, c2, c3 = st.columns(3)
     c1.metric(f"{dim_name} Ótimo", f"{opt_dimension:.2f} m")
     c2.metric("Altura Ótima (h)", f"{opt_height:.2f} m")
@@ -423,3 +373,7 @@ t = np.linspace(0, {time_span}, 100)
 temp_final = t_amb + delta_T * np.exp(-k * t)
 """
         st.code(code_snippet, language="python")
+=======
+elif selected == "Simulação Térmica":
+    thermal_view.render()
+>>>>>>> develop
