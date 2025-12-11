@@ -49,39 +49,56 @@ def render(geo_type, num_sides, vol, c_base, c_lat):
 
 def render_education(mass, z_cm, h, rho, B):
     st.markdown("---")
-    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Da Teoria à Prática", unsafe_allow_html=True)
+    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i>A Física por Trás da Integral", unsafe_allow_html=True)
     
-    col_math, col_code = st.columns([1, 1])
-    
-    with col_math:
-        st.markdown("**1. A Modelagem (Integrais)**")
-        st.write("""
-        **Por que usamos Integrais?**
-        Não podemos simplesmente multiplicar $Volume \\times Densidade$ porque a densidade muda com a altura (é mais densa na base).
-        Precisamos **fatiar** o tanque em discos infinitesimais de altura $dz$.
-        """)
+    with st.expander("Derivação", expanded=True):
         
-        st.latex(r"dM = \text{Area} \cdot \rho(z) \cdot dz")
-        st.latex(r"M = \int_{0}^{H} Area \cdot (\rho_{base} - B \cdot z) \, dz")
+        tab_model, tab_step = st.tabs(["1. Modelagem Física", "2. Resolvendo a Integral"])
         
-        st.markdown("**Centro de Massa:**")
-        st.write("Calculado pela razão entre o Momento de 1ª Ordem e a Massa Total:")
-        st.latex(r"\bar{z} = \frac{\int z \cdot \rho(z) \, dV}{\int \rho(z) \, dV}")
+        with tab_model:
+            st.markdown("##### O Problema da Densidade Variável")
+            st.write("Não podemos usar a fórmula simples $Massa = Volume \\times Densidade$ porque a densidade muda com a altura $z$.")
+            
+            st.markdown("**Função Densidade Linear:**")
+            st.write("Assumimos que a densidade decresce linearmente da base para o topo:")
+            st.latex(r"\rho(z) = \rho_{base} - B \cdot z")
+            st.latex(rf"\text{{Onde }} B = \frac{{\rho_{{base}} - \rho_{{topo}}}}{{H}} = {B:.4f}")
 
-    with col_code:
-        st.markdown("**2. O Algoritmo (Python)**")
-        st.write("O código implementa o resultado analítico da integral definida:")
-        st.latex(r"\int (A - Bz)dz = Az - \frac{Bz^2}{2}")
-        
-        st.code(f"""
-# Dados Físicos
-Area_base = ... 
-h = {h:.2f}
-rho_base = {rho}
-B = {B:.4f} # Gradiente de densidade
+            st.markdown("##### O Método do Fatiamento (Riemann)")
+            st.write("Para calcular a massa total, 'fatiamos' o tanque em discos horizontais infinitesimais de espessura $dz$.")
+            st.latex(r"dM = \text{Area} \cdot \rho(z) \cdot dz")
+            st.latex(r"M = \int_{0}^{H} \text{Area} \cdot (\rho_{base} - B z) \, dz")
 
-# Cálculo da Massa (Resultado da Integral)
-# Termo 1: rho_base * h
-# Termo 2: (B * h^2) / 2
-massa = Area_base * (rho_base * h - (B * h**2) / 2)
-""", language="python")
+        with tab_step:
+            st.markdown("##### Passo a Passo da Integração")
+            st.write("Vamos resolver $\int (\rho_{base} - B z) dz$ usando as regras de cálculo:")
+            
+            st.markdown("**Passo 1: Separar (Linearidade)**")
+            st.latex(r"\int \rho_{base} \, dz - \int B z \, dz")
+            
+            st.markdown(r"**Passo 2: Regra da Potência ($\int z^n dz = \frac{z^{n+1}}{n+1}$)**")
+            st.write(r"A integral de uma constante é $z$. A integral de $z$ (que é $z^1$) vira $z^2/2$.")
+            st.latex(r"\left[ \rho_{base} \cdot z - B \cdot \frac{z^2}{2} \right]_0^H")
+            
+            st.markdown("**Passo 3: Aplicar Limites (Teorema Fundamental)**")
+            st.write("Calculamos no Topo ($H$) e subtraímos a Base ($0$).")
+            st.latex(r"M = \text{Area} \cdot \left[ (\rho_{base} H - \frac{B H^2}{2}) - (0 - 0) \right]")
+            
+            st.success("Esta é a fórmula final utilizada.")
+
+#         with tab_code:
+#             st.markdown("##### Tradução para Código")
+#             st.write("O código apenas calcula o valor numérico do polinômio resultante da integração.")
+            
+#             st.code(f"""
+# # Variáveis Físicas
+# Area = ... # Calculada na aba 1
+# h = {h:.2f}
+# rho_base = {rho}
+# B = {B:.4f} # Gradiente calculado
+
+# # Aplicação do Resultado da Integral:
+# # Termo 1 (Retângulo): rho * h
+# # Termo 2 (Triângulo): (B * h^2) / 2
+# massa = Area * (rho_base * h - (B * h**2) / 2)
+# """, language="python")

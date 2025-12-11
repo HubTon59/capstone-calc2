@@ -64,62 +64,86 @@ def render(geo_type, num_sides, vol, c_base, c_lat):
 
 def render_education(geo_type, num_sides, k_area, vol, c_lat, c_base):
     st.markdown("---")
-    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Análise Matemática Detalhada", unsafe_allow_html=True)
+    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> A Otimização", unsafe_allow_html=True)
     
-    # Abas internas para organizar a teoria densa
-    tab_math, tab_code = st.columns([1, 1])
-    
-    with tab_math:
-        st.markdown("##### 1. O Problema de Otimização Condicionada")
-        st.write("""
-        Nosso objetivo não é apenas encontrar o mínimo de uma função, mas encontrar o mínimo que respeite uma regra física: 
-        o volume deve ser constante. É aqui que entra o **Multiplicador de Lagrange**.
-        """)
+    # Usamos Expander para não poluir a tela, mas permitindo profundidade total
+    with st.expander("Derivação", expanded=True):
         
-        st.latex(r"\nabla C(r, h) = \lambda \nabla V(r, h)")
+        tab_prob, tab_lagrange, tab_algebra = st.tabs([
+            "1. O Problema", "2. Lagrange", "3. Solução Algébrica"
+        ])
         
-        st.info("""
-        **Interpretação Geométrica:**
-        Os vetores gradientes da função Custo ($\nabla C$) e da função Volume ($\nabla V$) devem ser **paralelos**.
-        Isso significa que a curva de nível do custo tangencia a curva de nível do volume. Não há como mover-se na superfície de volume constante para reduzir mais o custo.
-        """)
-        
-        st.markdown("##### 2. A Solução Analítica")
-        if geo_type.startswith("Cil"):
-            st.write("Resolvendo o sistema de equações parciais para o cilindro, isolamos o raio:")
-            st.latex(r"r_{ótimo} = \sqrt[3]{\frac{V \cdot C_{lateral}}{2\pi \cdot C_{base}}}")
-            st.caption("Observe: Se o Custo Lateral aumenta (numerador), o raio aumenta (o tanque fica mais baixo e largo) para usar menos parede.")
-        else:
-            st.write(f"Para um prisma de {num_sides} lados, a área da base depende do fator geométrico $K_{{area}}$. A fórmula generalizada é:")
-            st.latex(r"L_{ótimo} = \sqrt[3]{\frac{n \cdot V \cdot C_{lateral}}{4 \cdot K_{area}^2 \cdot C_{base}}}")
+        with tab_prob:
+            st.markdown("##### Definição das Variáveis e Funções")
+            st.write("Queremos minimizar o **Custo ($C$)** mantendo o **Volume ($V$)** constante.")
+            
+            col_vars, col_funcs = st.columns(2)
+            with col_vars:
+                st.markdown("**Variáveis:**")
+                st.latex(r"r \text{ (Raio)}, h \text{ (Altura)}")
+                st.markdown("**Constantes:**")
+                st.latex(r"V_{alvo}, C_{base}, C_{lateral}")
+            
+            with col_funcs:
+                st.markdown("**Função Objetivo (Custo):**")
+                if geo_type.startswith("Cil"):
+                    st.latex(r"C(r, h) = \underbrace{2\pi r^2 \cdot C_{base}}_{\text{Tampas}} + \underbrace{2\pi r h \cdot C_{lat}}_{\text{Lateral}}")
+                else:
+                    st.latex(r"C(L, h) = 2 \cdot A_{base}(L) \cdot C_{base} + \text{Perimetro} \cdot h \cdot C_{lat}")
+                
+                st.markdown("**Restrição (Volume):**")
+                st.latex(r"V(r, h) = Area_{base} \cdot h = \text{constante}")
 
-    with tab_code:
-        st.markdown("##### O Algoritmo (Python)")
-        st.write("""
-        Computacionalmente, não precisamos refazer as derivadas a cada execução. 
-        Nós programamos a **solução algébrica final** (a fórmula isolada à esquerda).
-        """)
-        
-        if geo_type.startswith("Cil"):
-            code_snippet = f"""
-# Variáveis vindas dos Inputs
-V = {vol}        # Volume Alvo
-C_lat = {c_lat}  # Custo Lateral
-C_base = {c_base} # Custo Base
+        with tab_lagrange:
+            st.markdown("##### O Método dos Multiplicadores de Lagrange")
+            st.write("A condição para otimização com restrição é que os vetores gradientes sejam paralelos:")
+            st.latex(r"\nabla C = \lambda \nabla V")
+            
+            st.write("Isso gera um sistema de equações parciais. Para o cilindro, derivamos em relação a $r$ e $h$:")
+            
+            c_eq1, c_eq2 = st.columns(2)
+            with c_eq1:
+                st.markdown("**Eq. 1 (Derivada em $r$):**")
+                st.latex(r"4\pi r C_{base} + 2\pi h C_{lat} = \lambda (2\pi r h)")
+            with c_eq2:
+                st.markdown("**Eq. 2 (Derivada em $h$):**")
+                st.latex(r"2\pi r C_{lat} = \lambda (\pi r^2)")
 
-# Fórmula derivada de Lagrange aplicada diretamente:
-# np.pi é a constante pi (3.1415...)
-raio_otimo = ((V * C_lat) / (2 * np.pi * C_base))**(1/3)
-"""
-        else:
-            code_snippet = f"""
-# Para Prismas, calculamos o fator K primeiro
-n = {num_sides}
-K_area = {k_area:.4f} # Fator geométrico da base
+        with tab_algebra:
+            st.markdown("##### Solução")
+            st.write("Isolamos $\lambda$ na Eq. 2 e substituímos na Eq. 1. Após simplificar, encontramos a **Relação Geométrica Ótima** (independente do volume!):")
+            
+            st.latex(r"h = 2r \cdot \left(\frac{C_{base}}{C_{lat}}\right)")
+            st.caption("Interpretação: Se a base for cara, o tanque estica (h aumenta) para reduzir a área da base.")
+            
+            st.write("Substituindo esse $h$ na fórmula do Volume ($V = \pi r^2 h$), isolamos finalmente o raio ideal:")
+            
+            if geo_type.startswith("Cil"):
+                st.latex(r"r = \sqrt[3]{ \frac{V \cdot C_{lat}}{2\pi \cdot C_{base}} }")
+            else:
+                st.latex(r"L = \sqrt[3]{ \frac{n \cdot V \cdot C_{lat}}{4 \cdot K_{area}^2 \cdot C_{base}} }")
 
-# Fórmula Generalizada derivada via Lagrange:
-numerador = n * V * C_lat
-denominador = 4 * (K_area**2) * C_base
-lado_otimo = (numerador / denominador)**(1/3)
-"""
-        st.code(code_snippet, language="python")
+#         with tab_code:
+#             st.markdown("##### Tradução para Código")
+#             st.write("O Python não resolve o sistema linear. Nós programamos a **fórmula final isolada**.")
+            
+#             if geo_type.startswith("Cil"):
+#                 st.code(f"""
+# # 1. Cálculo da Base (Fórmula Final)
+# raio = (( {vol} * {c_lat} ) / ( 2 * np.pi * {c_base} ))**(1/3)
+
+# # 2. Cálculo da Altura (Consequência do Volume)
+# # h = V / Area
+# h = {vol} / (np.pi * raio**2)
+# """, language="python")
+#             else:
+#                 st.code(f"""
+# # 1. Cálculo do Lado (Lagrange Generalizado)
+# K = {k_area:.4f}
+# numerador = {num_sides} * {vol} * {c_lat}
+# denominador = 4 * (K**2) * {c_base}
+# lado = (numerador / denominador)**(1/3)
+
+# # 2. Altura
+# h = {vol} / (K * lado**2)
+# """, language="python")

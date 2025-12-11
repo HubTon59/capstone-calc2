@@ -58,37 +58,52 @@ def render():
 
 def render_education(t_amb, t_ini, k):
     st.markdown("---")
-    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Da Teoria à Prática", unsafe_allow_html=True)
+    st.markdown("#### <i class='bi bi-journal-text icon-gray'></i> Termodinâmica e EDOs", unsafe_allow_html=True)
     
-    col_math, col_code = st.columns([1, 1])
-    
-    with col_math:
-        st.markdown("**1. A Modelagem (Equações Diferenciais)**")
-        st.write("""
-        A Lei de Resfriamento de Newton afirma que a **velocidade** com que a temperatura muda é proporcional à diferença entre o corpo e o ambiente.
-        """)
+    with st.expander("Derivação", expanded=True):
         
-        st.latex(r"\frac{dT}{dt} = -k \cdot (T(t) - T_{amb})")
+        tab_edo, tab_sol = st.tabs(["1. A Equação Diferencial", "2. Solução Analítica"])
         
-        st.info("""
-                **Interpretação:**
-                Quando a diferença de temperatura é grande, o resfriamento é rápido (inclinação alta). Conforme se aproxima do equilíbrio, o processo desacelera.
-        """)
-        
-        st.write("Integrando esta EDO de 1ª ordem, chegamos à solução exponencial:")
-        st.latex(r"T(t) = T_{amb} + (T_{0} - T_{amb}) \cdot e^{-k \cdot t}")
+        with tab_edo:
+            st.markdown("##### Lei de Resfriamento de Newton")
+            st.write("Newton estabeleceu que a **velocidade** de mudança da temperatura é proporcional à diferença entre o corpo e o ambiente.")
+            
+            col_eq, col_meaning = st.columns(2)
+            with col_eq:
+                st.latex(r"\frac{dT}{dt} = -k \cdot (T - T_{amb})")
+            with col_meaning:
+                st.caption("""
+                - **dT/dt**: Taxa de variação (velocidade).
+                - **k**: Condutividade térmica.
+                - **Sinal negativo**: Indica que a temperatura tende ao equilíbrio (se está quente, esfria).
+                """)
 
-    with col_code:
-        st.markdown("**2. O Algoritmo (Python)**")
-        st.write("Em vez de simular passo a passo (loop), usamos a **solução analítica vetorizada** do NumPy, que calcula todos os pontos de tempo de uma vez.")
-        
-        st.code(f"""
-# Parâmetros Físicos
-k = {k}
-t_amb = {t_amb}
-delta_T = {t_ini} - {t_amb}
+        with tab_sol:
+            st.markdown("##### Resolvendo por Separação de Variáveis")
+            st.write("1. Separamos tudo que é $T$ para um lado e $t$ para o outro:")
+            st.latex(r"\frac{1}{T - T_{amb}} dT = -k \, dt")
+            
+            st.write("2. Integramos ambos os lados ($\int 1/x = \ln|x|$):")
+            st.latex(r"\ln(T - T_{amb}) = -k t + C")
+            
+            st.write("3. Isolamos $T$ usando exponencial e aplicamos a condição inicial $T(0) = T_{inicial}$:")
+            st.latex(r"T(t) = T_{amb} + (T_{inicial} - T_{amb}) \cdot e^{-kt}")
+            st.success("Esta é a fórmula que prevê o futuro da temperatura")
 
-# Aplicação da Solução da EDO
-# np.exp() calcula e^(-kt) para cada instante 't'
-temp_final = t_amb + delta_T * np.exp(-k * t)
-""", language="python")
+#         with tab_code:
+#             st.markdown("##### Tradução para Código")
+#             st.write("Em vez de um loop `for` (método de Euler), usamos a **solução exata** vetorizada do NumPy, que é mais precisa e rápida.")
+            
+#             st.code(f"""
+# # Parâmetros
+# k = {k}
+# t_amb = {t_amb}
+# delta_T = {t_ini} - {t_amb}
+
+# # Vetor de Tempo (0 a 48h)
+# t = np.linspace(0, 48, 100)
+
+# # Fórmula Exata da EDO:
+# # np.exp() calcula e^(-kt)
+# temp_final = t_amb + delta_T * np.exp(-k * t)
+# """, language="python")
